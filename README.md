@@ -1,2 +1,1 @@
-# G10
-Kontroll- og overvåkningsplattform
+# Kontroll- og overvåkningsplattform
