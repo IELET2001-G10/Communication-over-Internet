@@ -2,6 +2,7 @@
 #include <Wire.h>                                                 //SDA and SCL pins are declared in Wire.h library (SDA: 21, SCL: 22)
 #include <Adafruit_Sensor.h>
 #include "Adafruit_BME680.h"
+#include <ESP32Servo.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <SocketIoClient.h>
@@ -9,6 +10,7 @@
 WiFiMulti WiFiMulti;                                              //Declare instances of the libraries that was included
 SocketIoClient webSocket;
 Adafruit_BME680 bme;
+Servo servo;
 
 const char* SSID = "";                                            //Pointers to make all necessary configurations visible
 const char* PASS = "";                                            //Provide your AP name and password, and provide your server IP-adress as well as port number
@@ -48,6 +50,21 @@ void changeLEDState(const char * LEDStateData, size_t length) {   //What happens
 }
 
 /**
+ * Function that is run when the ESP32 receives windowStateChange identifier on webSocket.
+ * Takes the incomng char array, converts it to int for use as bool variable.
+ * @param windowStateData The received message from the server containing windowState
+ * @param length The size of the received message
+ */
+void changeWindowState(const char * windowStateData, size_t length) {
+  String dataString(windowStateData);                             //Converts the char array to int
+  int windowState = dataString.toInt();
+
+  if(windowState >= 0 && windowState <= 180) {
+    servo.write(windowState);                                     //Sets the servo to a degree of 0-180 (int can only be 0-180)
+  }
+}
+
+/**
  * Function that is run when the ESP32 receives dataRequest identifier on webSocket.
  * Takes the incoming char array, formats it to string and prints to serial monitor.
  * Also converts the char array to an int in order to check state of the data request.
@@ -55,10 +72,10 @@ void changeLEDState(const char * LEDStateData, size_t length) {   //What happens
  * @param DataRequestData The received message from the server containing the requestState
  * @param length The size of the received message
  */
-void dataRequest(const char * DataRequestData, size_t length) {   //This is the function that is called everytime the server asks for data from the ESP32
-  Serial.printf("Datarequest Data: %s\n", DataRequestData);
+void dataRequest(const char * dataRequestData, size_t length) {   //This is the function that is called everytime the server asks for data from the ESP32
+  Serial.printf("Datarequest: %s\n", dataRequestData);
 
-  String dataString(DataRequestData);
+  String dataString(dataRequestData);
   int requestState = dataString.toInt();
 
   if(requestState == 0) {                                         //If DataRequestData gives the value 0, read and send sensor data
@@ -114,6 +131,7 @@ void setup() {
 
     webSocket.on("clientConnected", event);                       //Declares all the different events the ESP32 should react to on the specified identifier
     webSocket.on("LEDStateChange", changeLEDState);               //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
+    webSocket.on("windowStateChange", changeWindowState);
     webSocket.on("dataRequest", dataRequest);
 
     webSocket.begin(IP, PORT);                                    //Starts the connection to the server with the provided ip-address and port (unencrypted)
@@ -122,9 +140,12 @@ void setup() {
     bme.setHumidityOversampling(BME680_OS_2X);                    //I.e. how many times the sensor value should be read for this one specific reading
     bme.setPressureOversampling(BME680_OS_4X);
     bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-    bme.setGasHeater(320, 150);                                   //Heat up the gas resistance sensor to 320 *C for 150 ms to start measurement (takes about 30 minutes after boot to stabilize, higher reading gives lower VOC concentration )
+    bme.setGasHeater(320, 150);                                   //Heat up the gas resistance sensor to 320 *C for 150 ms to start measurement (takes about 30 minutes after boot to stabilize, higher reading gives lower VOC concentration)
 
-    pinMode(18, OUTPUT);                                          //Declare the NodeMCU pin 18 as an output (to use as a warning light for bad indoor climate and the need to open a window)
+    servo.setPeriodHertz(50);                                     //Standard 50 Hz servo (like the SG90 or MG90S) that has a PWM period of 20 ms
+    servo.attach(16, 1000, 2000);                                 //Attaches the servo to GPIO16 with a duty cycle of 1-2 ms (1 ms = 0 deg and 2 ms = 180 deg)  NB! Check yours!
+
+    pinMode(18, OUTPUT);                                          //Declare the ESP32 board pin 18 as an output (to use as a warning light for bad indoor climate and the need to open a window)
 }
 
 /**
