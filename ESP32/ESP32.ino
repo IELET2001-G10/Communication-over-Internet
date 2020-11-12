@@ -6,26 +6,33 @@
 #include <WiFiMulti.h>
 #include <SocketIoClient.h>
 
-#define SEALEVELPRESSURE_HPA (1013.25)
-
 WiFiMulti WiFiMulti;                                              //Declare instances of the libraries that was included
 SocketIoClient webSocket;
 Adafruit_BME680 bme;
 
+const char* SSID = "";                                            //Pointers to make all necessary configurations visible
+const char* PASS = "";                                            //Provide your AP name and password, and provide your server IP-adress as well as port number
+const char* IP = "192.168.1.158";
+const int PORT = 2520;
+
 /**
- * Function that is run when the ESP32 receives clientConnected keyword on webSocket.
- * Takes the incoming char array, formats it to string with printf command,
- * and prints in serial monitor.
+ * Function that is run when the ESP32 receives clientConnected identifier on webSocket.
+ * Takes the incoming char array, formats it to string with printf command and prints
+ * in serial monitor.
+ * @param payload The received message containing the client's ID and IP sent from server
+ * @param length The size of the received message
 */
 void event(const char * payload, size_t length) {                 //Default event, print the received data in serial monitor
   Serial.printf("Got message: %s from server\n", payload);
 }
 
 /**
- * Function that is run when the ESP32 receives LEDStateChange keyword on webSocket. 
+ * Function that is run when the ESP32 receives LEDStateChange identifier on webSocket. 
  * Takes the incoming char array, formats it to string and prints to serial monitor.
  * Also converts the char array data to a string, converts it to an integer and
- * prints it in the serial monitor. 
+ * prints it in the serial monitor. Use the LEDStateData value to change LEDState.
+ * @param LEDStateData The received message from the server containing the LEDState
+ * @param length The size of the received message
  */
 void changeLEDState(const char * LEDStateData, size_t length) {   //What happens when the ESP32 receives an instruction from the server (with variable) to change the LED
   Serial.printf("LED State: %s\n", LEDStateData);                 //First we print the data formated with the "printf" command
@@ -41,131 +48,89 @@ void changeLEDState(const char * LEDStateData, size_t length) {   //What happens
 }
 
 /**
- * 
- * 
- * 
- * 
+ * Function that is run when the ESP32 receives dataRequest identifier on webSocket.
+ * Takes the incoming char array, formats it to string and prints to serial monitor.
+ * Also converts the char array to an int in order to check state of the data request.
+ * If requestState == 0, read sensor values and sends them to server using webSocket.
+ * @param DataRequestData The received message from the server containing the requestState
+ * @param length The size of the received message
  */
 void dataRequest(const char * DataRequestData, size_t length) {   //This is the function that is called everytime the server asks for data from the ESP32
   Serial.printf("Datarequest Data: %s\n", DataRequestData);
-  Serial.println(DataRequestData);
 
-  //Data conversion
   String dataString(DataRequestData);
-  int RequestState = dataString.toInt();
+  int requestState = dataString.toInt();
 
-  Serial.print("This is the Datarequest Data in INT: ");
-  Serial.println(RequestState);
-
-  if(RequestState == 0) {                                         //If the datarequest gives the variable 0, do this (default)
-    
-    char str[10];                                                 //Decalre a char array (needs to be char array to send to server)
-    itoa(analogRead(27), str, 10);                                //Use a special formatting function to get the char array as we want to, here we put the analogRead value from port 27 into the str variable
-    Serial.print("ITOA TEST: ");
-    Serial.println(str);
-    
-    webSocket.emit("dataFromBoard", str);                         //Here the data is sendt to the server and then the server sends it to the webpage
-                                                                  //Str indicates the data that is sendt every timeintervall, you can change this to "250" and se 250 be graphed on the webpage
-    /*
+  if(requestState == 0) {                                         //If DataRequestData gives the value 0, read and send sensor data
     bme.performReading();
-    
-    char temperature[10];
-    itoa(bme.temperature, temperature, 10);
-    webSocket.emit("nodeTemperature", temperature);
-    Serial.println(temperature);
-    */
 
-    nodeData();
+    char temperature[33];                                         //Declare char arrays for sensor data to send to server (needs to be char array to send to server)
+    char pressure[33];                                            //Char array big enogh to store the resulting string after formatting
+    char humidity[33];                                            //Size conveniently set to 
+    char voc[33];
+
+    sprintf(temperature, "%4.2f", bme.temperature);               //Use a special formatting function to get the char array from floats to char array that is null terminated
+    sprintf(pressure, "%6.2f", bme.pressure / 100.0);             //For each sensor value define how wide the array should at least be (digits and precision and the char array should consist of (maximum 6 digits for %f))
+    sprintf(humidity, "%4.2f", bme.humidity);
+    sprintf(voc, "%4.2f", bme.gas_resistance / 1000.0);
+  
+    webSocket.emit("nodeTemperature", temperature);               //Send the values to the server that listens for the identifier
+    webSocket.emit("nodePressure", pressure);                     //The values is printed in serial monitor by webSocket, so one can easily verify the outgoing values
+    webSocket.emit("nodeHumidity", humidity);                     //These sensor values is sent every timeInterval as specified on the server.js file
+    webSocket.emit("nodeVOC", voc);
   }
 }
 
-void nodeData() {
-  bme.performReading();
-  nodeTemperature();
-  nodePressure();
-  nodeHumidity();
-  nodeVOC();
-}
-
-void nodeTemperature() {
-  char temperature[10];
-  itoa(bme.temperature, temperature, 10);
-  webSocket.emit("nodeTemperature", temperature);
-  Serial.println(temperature);
-}
-
-void nodePressure() {
-  char pressure[10];
-  itoa(bme.pressure, pressure, 10);
-  webSocket.emit("nodePressure", pressure);
-  Serial.println(pressure);
-}
-
-void nodeHumidity() {
-  char humidity[10];
-  itoa(bme.humidity, humidity, 10);
-  webSocket.emit("nodeHumidity", humidity);
-  Serial.println(humidity);
-}
-
-void nodeVOC() {
-  char gas_resistance[10];
-  itoa(bme.gas_resistance, gas_resistance, 10);
-  webSocket.emit("nodeVOC", gas_resistance);
-  Serial.println(gas_resistance);
-}
-
+/**
+ * Function that is run once at boot. Initialises serial communication, WiFi, BME680-sensor 
+ * and webSocket events.
+ */
 void setup() {
     Serial.begin(9600);                                           //Start the serial monitor
-
-    Serial.setDebugOutput(true);                                  //Set debug to true (during ESP32 booting)
-
+    Serial.setDebugOutput(true);                                  //Set debug to true during ESP32 booting to see what is happening with the Wifi connection (dependent on Wifi.h library)
     Serial.println();
     Serial.println();
     Serial.println();
 
-      for(uint8_t t = 4; t > 0; t--) {                            //Wait four seconds to boot the ESP32
-          Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
-          Serial.flush();
-          delay(1000);
-      }
+    for(uint8_t t = 3; t > 0; t--) {                              //Wait three seconds to boot the ESP32
+      Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
+      Serial.flush();
+      delay(1000);
+    }
 
-    WiFiMulti.addAP("SSID", "passwd");                            //Add a WiFi hotspot (addAP = add AccessPoint)
+    WiFiMulti.addAP(SSID, PASS);                                  //Add the WiFi credentials to connect to an access point
 
-    while(WiFiMulti.run() != WL_CONNECTED) {                      //Here we wait for a successfull WiFi connection untill we do anything else
+    while(WiFiMulti.run() != WL_CONNECTED) {                      //Wait for a successful WiFi connection until before doing anything else
       Serial.println("Not connected to wifi...");
         delay(100);
     }
 
-    Serial.println("Connected to WiFi successfully!");            //When we have connected to a WiFi hotspot
+    Serial.println("Connected to WiFi successfully!");
 
-    while(!bme.begin()) {
+    while(!bme.begin()) {                                         //Wait for a successful connection to the BME680-sensor
       Serial.println("No BME680 sensor connected. Check wiring.");
       delay(100);
     }
 
-    //Here we declare all the different events the ESP32 should react to if the server tells it to.
-    //A socket.emit("identifier", data) on the server, with any of the identifieres as defined below will make the socket call the functions in the arguments below
-    webSocket.on("clientConnected", event);                       //For example, the socket.io server on node.js calls client.emit("clientConnected", ID, IP) Then this ESP32 will react with calling the event function
-    webSocket.on("LEDStateChange", changeLEDState);
+    webSocket.on("clientConnected", event);                       //Declares all the different events the ESP32 should react to on the specified identifier
+    webSocket.on("LEDStateChange", changeLEDState);               //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
+    webSocket.on("dataRequest", dataRequest);
 
-    //Send data to server/webpage
-    webSocket.on("dataRequest", dataRequest);                     //Listens for the command to send data
+    webSocket.begin(IP, PORT);                                    //Starts the connection to the server with the provided ip-address and port (unencrypted)
 
-    webSocket.begin("192.168.1.158", 2520);                       //This starts the connection to the server with the ip-address/domainname and a port (unencrypted)
-
-    // Set up oversampling and filter initialization
-    bme.setTemperatureOversampling(BME680_OS_8X);
-    bme.setHumidityOversampling(BME680_OS_2X);
+    bme.setTemperatureOversampling(BME680_OS_8X);                 //Set up oversampling and filter initialization
+    bme.setHumidityOversampling(BME680_OS_2X);                    //I.e. how many times the sensor value should be read for this one specific reading
     bme.setPressureOversampling(BME680_OS_4X);
     bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-    bme.setGasHeater(320, 150); // 320*C for 150 ms
+    bme.setGasHeater(320, 150);                                   //Heat up the gas resistance sensor to 320 *C for 150 ms to start measurement (takes about 30 minutes after boot to stabilize, higher reading gives lower VOC concentration )
 
-    pinMode(18, OUTPUT);                                          //The LED-pin
+    pinMode(18, OUTPUT);                                          //Declare the NodeMCU pin 18 as an output (to use as a warning light for bad indoor climate and the need to open a window)
 }
 
+/**
+ * Loop function that keeps the webSocket connection running. Do not use
+ * delays in this function, as it will interfer with webSocket operations.
+ */
 void loop() {
-  webSocket.loop(); //Keeps the WebSocket connection running 
-  //DO NOT USE DELAY HERE, IT WILL INTERFER WITH WEBSOCKET OPERATIONS
-  //TO MAKE TIMED EVENTS HERE USE THE millis() FUNCTION OR PUT TIMERS ON THE SERVER IN JAVASCRIPT
+  webSocket.loop();
 }
