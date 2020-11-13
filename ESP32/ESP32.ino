@@ -111,7 +111,7 @@ void dataRequest(const char * dataRequestData, size_t length) {   //This is the 
   String dataString(dataRequestData);
   int requestState = dataString.toInt();
 
-  if(requestState == 0) {                                         //If DataRequestData gives the value 0, read and send sensor data
+  if(requestState == 1) {                                         //If DataRequestData gives the value 0, read and send sensor data
     bme.performReading();
 
     char temperature[33];                                         //Declare char arrays for sensor data to send to server (needs to be char array to send to server)
@@ -165,7 +165,7 @@ void setup() {
     webSocket.on("clientConnected", event);                       //Declares all the different events the ESP32 should react to on the specified identifier
     webSocket.on("LEDStateChange", changeLEDState);               //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
     webSocket.on("windowStateChange", changeWindowState);
-    webSocket.on("overrideStateChange", changeOverrideState);
+    webSocket.on("overrideState", changeOverrideState);
     webSocket.on("dataRequest", dataRequest);
 
     webSocket.begin(IP, PORT);                                    //Starts the connection to the server with the provided ip-address and port (unencrypted)
