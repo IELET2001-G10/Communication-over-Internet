@@ -1,13 +1,12 @@
 <!DOCTYPE html> <!--Defines the HTML document-->
 <html lang="no"> <!--Sets the language for the webpage-->
 
-
 <head> <!--Defined the head element, which is to say the top of the webpage. Sometimes menus are placed here-->
     <meta charset="UTF-8"> <!--Sets the encoding of the webpage-->
     <title>Datakommunikasjon-prosjekt</title> <!--Sets the title of the webpage-->
-    <div class="header">
+    <div class="header"> <!--Sets the title of the webpage-->
         <h1>Kontroll- og overvåking av Inneklima</h1>
-        <k>Datakommunikasjonsprosjektet til gruppe 10</k>
+        <k>Datakommunikasjons-prosjektet til gruppe 10</k>
     </div>
     <link rel="stylesheet" href="style.css"> <!--Imports the stylesheet of the webpage. It gives element style-->
     <script src="libraries/socket.io.js"></script><!--Load Socket.io library-->
@@ -15,6 +14,8 @@
     <script>
         var dataArr1 = [5, 10, 20, 50, 320, 48, 142]; /* The chart data for "Data 1", altering this array/list changes the graph data */
         var dataArr2 = [2, 100, 50, 130, 20, 10, 50, 420, 50, 10]; /* The chart data for "Data 2", altering this array/list changes the graph data */
+        var dataArr3 = [7, 130, 40, 150, 40, 5, 40, 20, 53, 14];
+        var dataArr4 = [17, 150, 30, 30, 20, 15, 60, 42, 30, 10];
     </script>
 </head> <!-- the "/" indicates that the element is closed/stopped (you are done defining it)-->
 
@@ -23,13 +24,13 @@
 <div id="main-content"> <!--The main container of the webpage/the main HTML "tag"-->
     <div id="control-content"> <!--Just another HTML tag, this one defines the control panel container-->
 
-        <div class="control-module" id="control-module-1"> <!--This defines the first box with the keyboard in it (upper left)-->
+        <div class="control-module" id="control-module-1"> <!--This defines the first box (upper left)-->
             <div class="data-container dragElement dragBox"> <!--The "dragElement" and "dragBox" makes the element "dragable"
                   To define the element that can be draged you use the "dragElement" property here, to define what element that can be used
                   to actually drag the object (the element you click on to begin dragging) you use the "dragBox" property here.
                   -->
                 <!-- Content of first box-->
-                <table width=80% height="80%">
+                <table width=80% height="80%"> <!--This defines the data table with width and height-->
                     <tr>
                         <th>Temperatur</th>
                         <th>Trykk</th>
@@ -53,15 +54,15 @@
                     <h2 class="btn-title">HENT DATA KNAPPER</h2> <!--Title in the title-box-->
                 </div>
                 <div class="btn-box"> <!--Button container (left side of the container (split in middle) with a white background)-->
-                    <div class="btn" onclick="requestDataFromBoard(1000)">HENT DATA</div>  <!--The actual button with a green background. When you click this a functions is called-->
+                    <div class="btn" onclick="requestDataFromBoard(5000)">HENT DATA</div>  <!--The actual button with a green background. When you click this a functions is called-->
                     <!--requestDataFromBoard function starts data transfer from the ESP32 to the webpage-->
                 </div>
                 <div class="btn-box"><!--Button container (right side of the container (split in middle) with a white background)-->
                     <div class="btn" onclick="stopDataFromBoard()" style="background-color: #E23636">STOPP DATA</div> <!--The actual button with a red background. When you click this a functions is called-->
                     <!--stopDataFromBoard function stops data transfer from the ESP32 to the webpage-->
                 </div>
-                <es>Fjern dataen som ligger lagret i databasen &rarr; &nbsp;</es>
-                <button type="button" class="btn-sm">Reset</button>
+                <es>Fjern dataen som ligger lagret i databasen &rarr; &nbsp;</es> <!--This defines the text before the reset button-->
+                <button type="button" class="btn-sm" onclick="resetData()">Reset</button> <!--This defines the reset button-->
             </div>
         </div>
 
@@ -72,7 +73,7 @@
             </div>
         </div>
 
-        <div class="control-module" id="control-module-4"> <!--This defines the fourth box with nothing currently in it (lower right)-->
+        <div class="control-module" id="control-module-4"> <!--This defines the fourth box-->
             <!--Make a label thing here-->
             <div class="btn-container dragElement"> <!--Here the dragElement is the entire box-->
                 <div class="btn-title-con dragBox"> <!--But one can only start to drag it if one clicks on the top-box where the title is -->
@@ -91,6 +92,8 @@
 
                         slider.oninput = function() {
                             output.innerHTML = this.value;
+                            angle = slider.value;
+                            slidervalue();
                         }
                     </script>
                 </div>
@@ -103,19 +106,21 @@
                         var checkBox = document.getElementById("myCheck");
                         if (checkBox.checked == true){
                             document.getElementById("myRange").disabled = true;
+                            automation();
                         }else{
                             document.getElementById("myRange").disabled = false;
+                            manual();
                         }
                     }
                 </script>
             </div>
         </div>
-        </div>
     </div>
+</div>
 
-    <div class="footer">
-        <n>Gruppens medlemmer: Martin K. Gløsmyr, Håvard O. Kopperstad, Julius Haug, Mads Røvik og Youssef Aldabak</n>
-    </div>
+<div class="footer">
+    <n>Gruppens medlemmer: Martin K. Gløsmyr, Håvard O. Kopperstad, Julius Haug, Mads Røvik og Youssef Aldabak</n>
+</div>
 </div>
 
 
@@ -126,7 +131,6 @@
 <!--These scripts you can alter. They provide functionality/functions and are not libraries. View their purpose as splitting up your Arduino code in to different files for organization-->
 <script src="script/chartoperation.js"></script> <!--This allow yo to change how the graph works, how many graphs, colors, titles etc.-->
 <script src="script/socket.js"></script> <!--This allows you to change the property of Socket.io (the WebSockets) ALL SOCKET.IO FUNCTIONS ARE ALSO PLACED HERE!-->
-<script src="script/script.js"></script> <!--This is the script for general webpage functionality. How will the keyboard work and more. Here you can add new things if you wish-->
 
 </body>
 </html>
