@@ -1,4 +1,4 @@
-var socket = io.connect('192.168.1.10:2520', {secure: false}); //This line declares a socket.io object to var "socket" and connects to the server (change the IP-address and port to your own)
+var socket = io.connect('192.168.1.158:2520', {secure: false}); //This line declares a socket.io object to var "socket" and connects to the server (change the IP-address and port to your own)
 //The "secure: false" tells if the connection will be encrypted or not. Since we will not encrypt our connections, this is false.
 
 //Socket.io has several functions. The .on function refers to what will happen when the client receive a call called 'connect' from the server
@@ -13,12 +13,35 @@ socket.on('clientConnected',function(id, ip) { //This is our selfmade functions.
 
 });
 
-socket.on('data', function(data) { //Received data from the server who is forwarding it to us from the ESP32
-
-    console.log('Data was received: ' + data);
-    console.log(Number(data));
+socket.on('temperatureData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    console.log('Received temperature: ' + data + ' ℃');
     dataArr1.push(data); //This pushes data to the array that stores all the chart data
     myLineChart.update(); //This updates the chart
+    var Temp_data = data;
+
+});
+
+socket.on('pressureData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    console.log('Received pressure: ' + data + ' hPa');
+    dataArr2.push(data); //This pushes data to the array that stores all the chart data
+    myLineChart.update(); //This updates the chart
+    var Trykk_data = data;
+
+});
+
+socket.on('humidityData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    console.log('Received relative humidity: ' + data + ' %');
+    dataArr3.push(data); //This pushes data to the array that stores all the chart data
+    myLineChart.update(); //This updates the chart
+    var F_data = data;
+
+});
+
+socket.on('vocData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    console.log('Received VOC level: ' + data + ' ppm');
+    dataArr4.push(data); //This pushes data to the array that stores all the chart data
+    myLineChart.update(); //This updates the chart
+    var LK_data = data;
 
 });
 
@@ -32,26 +55,6 @@ function changeLEDState(state) {
 
 }
 
-function changeDriveState(state) {
-
-    socket.emit('changeDriveState', state); //Same logic as earlier, this calls the change of motor direction
-    console.log("changeDriveState called");
-
-}
-
-function changeTurnState(state) {
-
-    socket.emit('changeTurnState', state);
-    console.log("changeTurnState called");
-
-}
-
-function changeStopState(state) {
-
-    socket.emit('changeStopState', state);
-    console.log("changeStopState called");
-
-}
 
 //This function also emits something to the server. But in this case we want something a little bit more complex to happen.
 //Since Arduino has a limited amount of timers, and using millis can be annoying, we have the possibilties of handing that task over to JavaScript on Node.js
@@ -68,4 +71,24 @@ function requestDataFromBoard(interval) {
 function stopDataFromBoard() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
     socket.emit('stopDataFromBoard'); //Here we tell the server to call the function "stopDataFromBoard"
     console.log("stopDataFromBoard was called");
+}
+
+function resetData() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('resetData', 1); //Here we tell the server to call the function "stopDataFromBoard"
+    console.log("resetData was called");
+}
+
+function automation() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('changeOverrideState', 0);
+    console.log("Automation was called");
+}
+
+function manual() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('changeOverrideState', 1);
+    console.log("Manual was called");
+}
+
+function slidervalue() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('changeWindowState', angle);
+    console.log("Slidervalue: " + angle);
 }
