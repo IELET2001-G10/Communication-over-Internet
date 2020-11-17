@@ -1,6 +1,5 @@
-#include <analogWrite.h>                                          //Include the different libraries needed for the project
-#include <Wire.h>                                                 //SDA and SCL pins are declared in Wire.h library (SDA: 21, SCL: 22)
-#include <Adafruit_Sensor.h>
+#include <Wire.h>                                                 //Include the different libraries needed for the project
+#include <Adafruit_Sensor.h>                                      //SDA and SCL pins are declared in Wire.h library (SDA: 21, SCL: 22)
 #include "Adafruit_BME680.h"
 #include <ESP32Servo.h>
 #include <WiFi.h>
@@ -52,6 +51,7 @@ void changeLEDState(const char * LEDStateData, size_t length) {
  * @param length The size of the received message
  */
 void changeWindowState(const char * windowStateData, size_t length) {
+  Serial.printf("WindowState: %s\n", windowStateData);
   String dataString(windowStateData);                             //Converts the char array to int
   int windowState = dataString.toInt();
 
@@ -62,11 +62,12 @@ void changeWindowState(const char * windowStateData, size_t length) {
 
 /**
  * Function that is run when the ESP32 receives windowOverride identifier on webSocket.
- * Takes the incomng char array, converts it to int for use as bool variable.
+ * Takes the incomng char array, converts it to int for use as global bool variable.
  * @param windowStateData The received message from the server containing windowState
  * @param length The size of the received message
  */
 void changeOverrideState(const char * windowOverrideData, size_t length) {
+  Serial.printf("OverrideState: %s\n", windowOverrideData);
   String dataString(windowOverrideData);                          //Converts the char array to int
   windowOverride = dataString.toInt();
 }
@@ -88,10 +89,12 @@ void checkIndoorClimate() {
     if(temperature > 24.0 || humidity >= 45.0 || gas_res_kohm <= 2.50) {                            
       servo.write(180);                                           //Some defined trigger levels for "bad indoor climate" and then the window should be opened 
       digitalWrite(18, 1);                                        //As long as the manual override (slider) on the webpage is not pressed, the window will open
-    }                                                             //automatically if the indoor climate is bad
+      Serial.println("Bad indoor climate. Open window.");         //automatically if the indoor climate is bad
+    }
     else {
       servo.write(0);                                             //If indoor climate is OK, the window is closed
       digitalWrite(18, 0);
+      Serial.println("Indoor climate OK. Closed window.");
     }
     timePrev = millis();
   }
