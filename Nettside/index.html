@@ -12,12 +12,10 @@
     <script src="libraries/socket.io.js"></script><!--Load Socket.io library-->
     <script src="libraries/Chart.min.js"></script> <!--Load Chart.js library-->
     <script>
-        var dataArr1 = []; /* The chart data for "Data 1", altering this array/list changes the graph data */
-        var dataArr2 = []; /* The chart data for "Data 2", altering this array/list changes the graph data */
-        var dataArr3 = [];
-        var dataArr4 = [];
-        graph_time = dataArr2.length;
-        labels_arr = Array.from(Array(graph_time).keys());
+        var dataArr1 = [0]; /* The chart data for "Data 1", altering this array/list changes the graph data */
+        var dataArr2 = [0]; /* The chart data for "Data 2", altering this array/list changes the graph data */
+        var dataArr3 = [0];
+        var dataArr4 = [0];
     </script>
 </head> <!-- the "/" indicates that the element is closed/stopped (you are done defining it)-->
 
@@ -35,9 +33,9 @@
                 <h2>Sanntidsverdier</h2>
                 <table width=80% height="80%"> <!--This defines the data table with width and height-->
                     <tr>
-                        <th>Temperatur</th>
-                        <th>Trykk</th>
-                        <th>Fuktighet</th>
+                        <th>Temperatur [ºC]</th>
+                        <th>Trykk [hPa]</th>
+                        <th>Fuktighet [%]</th>
                         <th>Luftkvalitet</th>
                     </tr>
                     <tr>
