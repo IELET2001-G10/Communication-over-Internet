@@ -12,10 +12,12 @@
     <script src="libraries/socket.io.js"></script><!--Load Socket.io library-->
     <script src="libraries/Chart.min.js"></script> <!--Load Chart.js library-->
     <script>
-        var dataArr1 = [5, 10, 20, 50, 320, 48, 142]; /* The chart data for "Data 1", altering this array/list changes the graph data */
-        var dataArr2 = [2, 100, 50, 130, 20, 10, 50, 420, 50, 10]; /* The chart data for "Data 2", altering this array/list changes the graph data */
-        var dataArr3 = [7, 130, 40, 150, 40, 5, 40, 20, 53, 14];
-        var dataArr4 = [17, 150, 30, 30, 20, 15, 60, 42, 30, 10];
+        var dataArr1 = []; /* The chart data for "Data 1", altering this array/list changes the graph data */
+        var dataArr2 = []; /* The chart data for "Data 2", altering this array/list changes the graph data */
+        var dataArr3 = [];
+        var dataArr4 = [];
+        graph_time = dataArr2.length;
+        labels_arr = Array.from(Array(graph_time).keys());
     </script>
 </head> <!-- the "/" indicates that the element is closed/stopped (you are done defining it)-->
 
@@ -30,6 +32,7 @@
                   to actually drag the object (the element you click on to begin dragging) you use the "dragBox" property here.
                   -->
                 <!-- Content of first box-->
+                <h2>Sanntidsverdier</h2>
                 <table width=80% height="80%"> <!--This defines the data table with width and height-->
                     <tr>
                         <th>Temperatur</th>
@@ -38,10 +41,10 @@
                         <th>Luftkvalitet</th>
                     </tr>
                     <tr>
-                        <td>Temp_data</td>
-                        <td>Trykk_data</td>
-                        <td>F_data</td>
-                        <td>LK_data</td>
+                        <td id="temp">Ingen data</td>
+                        <td id="pressure">Ingen data</td>
+                        <td id="hum">Ingen data</td>
+                        <td id="voc">Ingen data</td>
                     </tr>
                 </table>
             </div>
@@ -54,7 +57,7 @@
                     <h2 class="btn-title">HENT DATA KNAPPER</h2> <!--Title in the title-box-->
                 </div>
                 <div class="btn-box"> <!--Button container (left side of the container (split in middle) with a white background)-->
-                    <div class="btn" onclick="requestDataFromBoard(5000)">HENT DATA</div>  <!--The actual button with a green background. When you click this a functions is called-->
+                    <div class="btn" onclick="requestDataFromBoard(1000)">HENT DATA</div>  <!--The actual button with a green background. When you click this a functions is called-->
                     <!--requestDataFromBoard function starts data transfer from the ESP32 to the webpage-->
                 </div>
                 <div class="btn-box"><!--Button container (right side of the container (split in middle) with a white background)-->

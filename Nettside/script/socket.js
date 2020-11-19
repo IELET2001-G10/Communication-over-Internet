@@ -14,34 +14,34 @@ socket.on('clientConnected',function(id, ip) { //This is our selfmade functions.
 });
 
 socket.on('temperatureData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    document.getElementById('temp').innerHTML = data;
     console.log('Received temperature: ' + data + ' ℃');
     dataArr1.push(data); //This pushes data to the array that stores all the chart data
     myLineChart.update(); //This updates the chart
-    var Temp_data = data;
 
 });
 
 socket.on('pressureData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    document.getElementById('pressure').innerHTML = data;
     console.log('Received pressure: ' + data + ' hPa');
     dataArr2.push(data); //This pushes data to the array that stores all the chart data
     myLineChart.update(); //This updates the chart
-    var Trykk_data = data;
 
 });
 
 socket.on('humidityData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    document.getElementById('hum').innerHTML = data;
     console.log('Received relative humidity: ' + data + ' %');
     dataArr3.push(data); //This pushes data to the array that stores all the chart data
     myLineChart.update(); //This updates the chart
-    var F_data = data;
 
 });
 
 socket.on('vocData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
+    document.getElementById('voc').innerHTML = data;
     console.log('Received VOC level: ' + data + ' ppm');
     dataArr4.push(data); //This pushes data to the array that stores all the chart data
     myLineChart.update(); //This updates the chart
-    var LK_data = data;
 
 });
 
@@ -73,8 +73,9 @@ function stopDataFromBoard() { //Tells the server to stop all timers so that dat
     console.log("stopDataFromBoard was called");
 }
 
-function resetData() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
-    socket.emit('resetData', 1); //Here we tell the server to call the function "stopDataFromBoard"
+function resetData() {
+
+    socket.emit('resetData', 1);
     console.log("resetData was called");
 }
 
@@ -90,5 +91,5 @@ function manual() { //Tells the server to stop all timers so that data is no lon
 
 function slidervalue() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
     socket.emit('changeWindowState', angle);
-    console.log("Slidervalue: " + angle);
+    console.log("Slidervalue: ", angle);
 }
