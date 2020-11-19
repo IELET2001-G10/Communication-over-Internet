@@ -16,8 +16,6 @@ const char* PASS = "";                                            //Provide your
 const char* IP = "192.168.1.158";
 const int PORT = 2520;
 
-unsigned long timePrev;                                           //Declare a global variable for use as a timer
-int windowOverride;                                               //Declare a global variable for use in local function
 
 /**
  * Function that is run when the ESP32 receives clientConnected identifier on webSocket.
@@ -61,42 +59,28 @@ void changeWindowState(const char * windowStateData, size_t length) {
 }
 
 /**
- * Function that is run when the ESP32 receives windowOverride identifier on webSocket.
- * Takes the incomng char array, converts it to int for use as global bool variable.
- * @param windowStateData The received message from the server containing windowState
- * @param length The size of the received message
- */
-void changeOverrideState(const char * windowOverrideData, size_t length) {
-  Serial.printf("OverrideState: %s\n", windowOverrideData);
-  String dataString(windowOverrideData);                          //Converts the char array to int
-  windowOverride = dataString.toInt();
-}
-
-/**
  * Function that checks sensor values every 10 seconds. If one or several of the readings are
  * exceeding their limits, the window should open in order to improve the indoor climate.
  * This function will only open the window of the manual override button on the webpage
  * is not triggered (windowOverride == 0).
+ * @param autmationData The received message from the server containing the automationData
+ * @param length The size of the received message
  */
-void checkIndoorClimate() {
-  if(millis() - timePrev >= 10000 && windowOverride == 0) {
+void checkIndoorClimate(const char * automationData, size_t length) {
+  bme.performReading();                                         //Read sensor values and store them in variables
+  float temperature = bme.temperature;
+  float humidity = bme.humidity;
+  float gas_res_kohm = bme.gas_resistance;
 
-    bme.performReading();                                         //Read sensor values and store them in variables
-    float temperature = bme.temperature;
-    float humidity = bme.humidity;
-    float gas_res_kohm = bme.gas_resistance;
-
-    if(temperature > 24.0 || humidity >= 45.0 || gas_res_kohm <= 2.50) {                            
-      servo.write(180);                                           //Some defined trigger levels for "bad indoor climate" and then the window should be opened 
-      digitalWrite(18, 1);                                        //As long as the manual override (slider) on the webpage is not pressed, the window will open
-      Serial.println("Bad indoor climate. Open window.");         //automatically if the indoor climate is bad
-    }
-    else {
-      servo.write(0);                                             //If indoor climate is OK, the window is closed
-      digitalWrite(18, 0);
-      Serial.println("Indoor climate OK. Closed window.");
-    }
-    timePrev = millis();
+  if(temperature > 24.0 || humidity >= 45.0 || gas_res_kohm <= 2.50) {                            
+    servo.write(180);                                           //Some defined trigger levels for "bad indoor climate" and then the window should be opened 
+    digitalWrite(18, 1);                                        //As long as the manual override (slider) on the webpage is not pressed, the window will open
+    Serial.println("Bad indoor climate. Window open.");         //automatically if the indoor climate is bad
+  }
+  else {
+    servo.write(0);                                             //If indoor climate is OK, the window is closed
+    digitalWrite(18, 0);
+    Serial.println("Indoor climate OK. Window closed.");
   }
 }
 
@@ -105,33 +89,28 @@ void checkIndoorClimate() {
  * Takes the incoming char array, formats it to string and prints to serial monitor.
  * Also converts the char array to an int in order to check state of the data request.
  * If requestState == 0, read sensor values and sends them to server using webSocket.
- * @param DataRequestData The received message from the server containing the requestState
+ * @param dataRequestData The received message from the server containing the requestState
  * @param length The size of the received message
  */
 void dataRequest(const char * dataRequestData, size_t length) {   //This is the function that is called everytime the server asks for data from the ESP32
   Serial.printf("Datarequest: %s\n", dataRequestData);
 
-  String dataString(dataRequestData);
-  int requestState = dataString.toInt();
+  bme.performReading();
 
-  if(requestState == 1) {                                         //If DataRequestData gives the value 0, read and send sensor data
-    bme.performReading();
+  char temperature[33];                                         //Declare char arrays for sensor data to send to server (needs to be char array to send to server)
+  char pressure[33];                                            //Char array big enogh to store the resulting string after formatting
+  char humidity[33];                                            //Size conveniently set to 
+  char voc[33];
 
-    char temperature[33];                                         //Declare char arrays for sensor data to send to server (needs to be char array to send to server)
-    char pressure[33];                                            //Char array big enogh to store the resulting string after formatting
-    char humidity[33];                                            //Size conveniently set to 
-    char voc[33];
-
-    sprintf(temperature, "%4.2f", bme.temperature);               //Use a special formatting function to get the char array from floats to char array that is null terminated
-    sprintf(pressure, "%6.2f", bme.pressure / 100.0);             //For each sensor value define how wide the array should at least be (digits and precision and the char array should consist of (maximum 6 digits for %f))
-    sprintf(humidity, "%4.2f", bme.humidity);
-    sprintf(voc, "%4.2f", bme.gas_resistance / 1000.0);
+  sprintf(temperature, "%4.2f", bme.temperature);               //Use a special formatting function to get the char array from floats to char array that is null terminated
+  sprintf(pressure, "%6.2f", bme.pressure / 100.0);             //For each sensor value define how wide the array should at least be (digits and precision and the char array should consist of (maximum 6 digits for %f))
+  sprintf(humidity, "%4.2f", bme.humidity);
+  sprintf(voc, "%4.2f", bme.gas_resistance / 1000.0);
   
-    webSocket.emit("nodeTemperature", temperature);               //Send the values to the server that listens for the identifier
-    webSocket.emit("nodePressure", pressure);                     //The values is printed in serial monitor by webSocket, so one can easily verify the outgoing values
-    webSocket.emit("nodeHumidity", humidity);                     //These sensor values is sent every timeInterval as specified on the server.js file
-    webSocket.emit("nodeVOC", voc);
-  }
+  webSocket.emit("nodeTemperature", temperature);               //Send the values to the server that listens for the identifier
+  webSocket.emit("nodePressure", pressure);                     //The values is printed in serial monitor by webSocket, so one can easily verify the outgoing values
+  webSocket.emit("nodeHumidity", humidity);                     //These sensor values is sent every timeInterval as specified on the server.js file
+  webSocket.emit("nodeVOC", voc);
 }
 
 /**
@@ -168,7 +147,7 @@ void setup() {
     webSocket.on("clientConnected", event);                       //Declares all the different events the ESP32 should react to on the specified identifier
     webSocket.on("LEDStateChange", changeLEDState);               //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
     webSocket.on("windowStateChange", changeWindowState);
-    webSocket.on("overrideState", changeOverrideState);
+    webSocket.on("checkIndoorClimate", checkIndoorClimate);
     webSocket.on("dataRequest", dataRequest);
 
     webSocket.begin(IP, PORT);                                    //Starts the connection to the server with the provided ip-address and port (unencrypted)
@@ -183,8 +162,6 @@ void setup() {
     servo.attach(16, 500, 2500);                                  //Attaches the servo to GPIO16 with a duty cycle of 0.5-2.5 ms (0.5 ms = 0 deg and 2.5 ms = 180 deg)  NB! Check yours!
 
     pinMode(18, OUTPUT);                                          //Declare the ESP32 board pin 18 as an output (to use as a warning light for bad indoor climate and the need to open a window)
-    windowOverride = 0;                                           //The initial state of the variable to start "automation" of indoor climate
-    timePrev = millis();                                          //Start the counting for the timer
 }
 
 /**
@@ -193,5 +170,4 @@ void setup() {
  */
 void loop() {
   webSocket.loop();
-  checkIndoorClimate();
 }
