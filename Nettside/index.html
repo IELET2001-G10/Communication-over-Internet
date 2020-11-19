@@ -57,7 +57,7 @@
                     <h2 class="btn-title">HENT DATA KNAPPER</h2> <!--Title in the title-box-->
                 </div>
                 <div class="btn-box"> <!--Button container (left side of the container (split in middle) with a white background)-->
-                    <div class="btn" onclick="requestDataFromBoard(1000)">HENT DATA</div>  <!--The actual button with a green background. When you click this a functions is called-->
+                    <div class="btn" onclick="requestDataFromBoard(1500)">HENT DATA</div>  <!--The actual button with a green background. When you click this a functions is called-->
                     <!--requestDataFromBoard function starts data transfer from the ESP32 to the webpage-->
                 </div>
                 <div class="btn-box"><!--Button container (right side of the container (split in middle) with a white background)-->
@@ -96,7 +96,7 @@
                         slider.oninput = function() {
                             output.innerHTML = this.value;
                             angle = slider.value;
-                            slidervalue();
+                            sliderValue();
                         }
                     </script>
                 </div>
@@ -109,7 +109,7 @@
                         var checkBox = document.getElementById("myCheck");
                         if (checkBox.checked == true){
                             document.getElementById("myRange").disabled = true;
-                            automation();
+                            automation(10000);
                         }else{
                             document.getElementById("myRange").disabled = false;
                             manual();

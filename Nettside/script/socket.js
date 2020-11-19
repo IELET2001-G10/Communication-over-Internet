@@ -7,9 +7,9 @@ socket.on('connect',function() { //When you connect to the server (and it works)
     console.log('Client has connected to the server!'); //The client prints this message
 }); //The 'connect' function/identifier is the standard procedure. To make something more we have to make it ourselves
 
-socket.on('clientConnected',function(id, ip) { //This is our selfmade functions. Here we can have the server return arguments (data) that we need
+socket.on('clientConnected',function(id, ip) { //This is our self-made functions. Here we can have the server return arguments (data) that we need
     console.log('Client recevied ID: ' + id); //In this case the server will tell us what our local ID is (auto assigned)
-    console.log("Client IP: " + ip);//And it will tell us what our IP-address
+    console.log('Client IP: ' + ip);//And it will tell us what our IP-address
 
 });
 
@@ -49,28 +49,28 @@ socket.on('vocData', function(data) { //Received data from the server who is for
 //For this we use the other important Socket.io function, .emit(arg). Here we are telling our socket object so call the "changeLEDState" function
 //on the server with the "state" argument. By calling the function on the server we mean that we send data to the server that tells it to do something
 function changeLEDState(state) {
-    //This function controls wether a LED-light is on or of
+    //This function controls whether a LED-light is on or of
     socket.emit('changeLEDState', state); //Here the actual socket-object function is called. If we want a response we will have to set up a function (.on) like earlier.
-    console.log("changeLEDState called");
+    console.log('changeLEDState called');
 
 }
 
 
 //This function also emits something to the server. But in this case we want something a little bit more complex to happen.
-//Since Arduino has a limited amount of timers, and using millis can be annoying, we have the possibilties of handing that task over to JavaScript on Node.js
+//Since Arduino has a limited amount of timers, and using millis can be annoying, we have the posibilties of handing that task over to JavaScript on Node.js
 //The function we are calling here will tell the server to set up a JavaScript timer, which then will periodically send a message to the ESP32 asking for data.
 //Since the ESP32 easily can react to such a request it sends the data with no problems, and with no timers in use.
 //This means we dont have to use the delay() function or the millis() function in Arduino, we can just let Node and JavaScript fix the tracking of time for us
 //This is the function that will make the ESP32 transmit data to the server, and not the other way around
 function requestDataFromBoard(interval) {
     socket.emit('requestDataFromBoard', interval); //Here we tell the server to call the function "requestDataFromBoard" with a argument called "intervall"
-    //The intervall value is the period of time between each data transmit from the ESP32 to the server. Typical values can be everything form 100ms to 100s
-    console.log("requestDataFromBoard was called with intervall: " + interval);
+    //The interval value is the period of time between each data transmit from the ESP32 to the server. Typical values can be everything form 100ms to 100s
+    console.log('requestDataFromBoard was called with interval (ms): ' + interval);
 } //Be careful to not set the interval value to low, you do not want to overflood your server with data/requests
 
 function stopDataFromBoard() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
     socket.emit('stopDataFromBoard'); //Here we tell the server to call the function "stopDataFromBoard"
-    console.log("stopDataFromBoard was called");
+    console.log('stopDataFromBoard was called');
 }
 
 function resetData() {
@@ -79,17 +79,18 @@ function resetData() {
     console.log("resetData was called");
 }
 
-function automation() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
-    socket.emit('changeOverrideState', 0);
-    console.log("Automation was called");
+function automation(interval) { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+//    socket.emit('changeOverrideState', 0);
+    socket.emit('startAutomation', interval);
+    console.log('Automation was called with interval(ms): ' + interval);
 }
 
 function manual() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
-    socket.emit('changeOverrideState', 1);
-    console.log("Manual was called");
+    socket.emit('stopAutomation');
+    console.log('stopAutomation was called');
 }
 
-function slidervalue() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+function sliderValue() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
     socket.emit('changeWindowState', angle);
-    console.log("Slidervalue: ", angle);
+    console.log('Slider-value set to: ', angle);
 }

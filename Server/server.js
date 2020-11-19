@@ -31,8 +31,11 @@ io.on('connection', function(socket){                           //Everytime a us
     client.on('disconnect', function(){                         //Function that is called when the client is disconnected. The server can then do something even tough the client is disconnected
         console.log("User " + clientID + " disconnected, stopping timers if any");
 
-        for (var i = 0; i < timers.length; i++) {               //Clear the timers if the client disconnects (this instance)
-            clearTimeout(timers[i]);                            //clearTimeout is the same as stopping the timer, in this case we clear all possible timers previously set
+        for (var i = 0; i < dataTimers.length; i++) {               //Clear the timers if the client disconnects (this instance)
+            clearTimeout(dataTimers[i]);                            //clearTimeout is the same as stopping the timer, in this case we clear all possible timers previously set
+        }
+        for (var j = 0; j < automationTimers.length; j++) {
+            clearTimeout(automationTimers[j]);
         }
 
     });
@@ -63,14 +66,15 @@ io.on('connection', function(socket){                           //Everytime a us
 
     //Data from board
 
-    var timers = [];                                            //Stores all our timers
+    var dataTimers = [];                                            //Stores all our timers
+    var automationTimers = [];
 
     socket.on('requestDataFromBoard', function(interval) {      //Function that asks clients for data every time-interval
 
         console.log('User ' + clientID + ' requested data with interval (ms): ' + interval);
 
         if(interval > 99) {                                     //If the time-interval is not more than 100ms it does not allow it to start
-            timers.push(                                        //If an actual argument is given (a time period) it starts the timer and periodically calls the function
+            dataTimers.push(                                        //If an actual argument is given (a time period) it starts the timer and periodically calls the function
                 setInterval(function(){
                     io.emit('dataRequest', 1);                  //Send "dataRequest" command/function to all clients
                 }, interval)
@@ -79,14 +83,38 @@ io.on('connection', function(socket){                           //Everytime a us
             console.log("Too short time-interval provided");
         }
 
-
     });
 
     socket.on('stopDataFromBoard', function() {                 //Function that stops all timers set by a client so that data will no longer be sent to the webpage
         console.log('User ' + clientID + ' cleared data request interval');
 
-        for (var i = 0; i < timers.length; i++) {               //For loop to clear all set timers
-            clearTimeout(timers[i]);                            //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
+        for (var i = 0; i < dataTimers.length; i++) {               //For loop to clear all set timers
+            clearTimeout(dataTimers[i]);                            //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
+        }
+
+    });
+
+    socket.on('startAutomation', function(interval) {
+
+        console.log('User ' + clientID + ' requested automation should start with interval (ms): ' + interval);
+
+        if(interval > 99) {
+            automationTimers.push(
+                setInterval(function(){
+                    io.emit('checkIndoorClimate', 1);
+                }, interval)
+            );
+        } else {
+            console.log('Too short time-interval provided');
+        }
+
+    });
+
+    socket.on('stopAutomation', function() {                 //Function that stops all timers set by a client so that data will no longer be sent to the webpage
+        console.log('User ' + clientID + ' cleared automation interval');
+
+        for (var i = 0; i < automationTimers.length; i++) {               //For loop to clear all set timers
+            clearTimeout(automationTimers[i]);                            //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
         }
 
     });
