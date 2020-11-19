@@ -1,9 +1,12 @@
+var now = new Date();
+var time_now = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+
 var ctx = document.getElementById('myChart').getContext('2d'); //Defines the basic graphic element of the graph
 
 var myLineChart = new Chart(ctx, { //Defines the graph
     type: 'line', //Defines the type of graph
     data: { //Decides how the data (content of the graph will be)
-        labels: labels_arr, //Labels define the values of the x-axis (and can be altered at a later point/live)
+        labels: [time_now], //Labels define the values of the x-axis (and can be altered at a later point/live)
         datasets: [ //Datasets refers to the different graphs and the data they contain
             {
                 label: 'Temperatur', //Label of dataset/graph 1
@@ -57,9 +60,19 @@ var myLineChart = new Chart(ctx, { //Defines the graph
     },
     options: {
         scales: {
+            xAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'tid'
+                }
+            }],
             yAxes: [{
                 ticks: {
                     beginAtZero: true //Keep this true to begin at zero in the graph
+                }
+                scaleLabel: {
+                    display: true,
+                    labelString: 'verdi'
                 }
             }]
         },
