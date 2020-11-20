@@ -18,6 +18,9 @@ const char* PASS = "";                                            //Provide your
 const char* IP = "192.168.1.158";
 const int PORT = 2520;
 
+float tempLimit = 24.0;                                           //Some predefined variables containing automation limits
+float humidLimit = 45.0;                                          //Will always take new values before running checkIndoorClimate for the first time
+float VOCLimit = 2.50;                                            //due to how the webpage client is programmed
 
 /**
  * Function that is run when the ESP32 receives clientConnected identifier on webSocket.
@@ -26,8 +29,8 @@ const int PORT = 2520;
  * @param payload The received message containing the client's ID and IP sent from server
  * @param length The size of the received message
 */
-void event(const char * payload, size_t length) {                 //Default event, print the received data in serial monitor
-  Serial.printf("Got message: %s from server\n", payload);
+void serverMessage(const char * payload, size_t length) {
+  Serial.printf("A new client with ID and IP: %s connected to the server!\n", payload);
 }
 
 /**
@@ -47,11 +50,48 @@ void changeWindowState(const char * windowStateData, size_t length) {
 }
 
 /**
+ * Function that is run when the ESP32 receives temperatureLimit identifier on webSocket.
+ * Takes the incoming char array, converts it to float for use in checkIndoorClimate function.
+ * @param temperatureLimitData The received message from the server containing tempLimit
+ * @param length The size of the received message
+ */
+void temperatureLimit(const char * temperatureLimitData, size_t length) {
+  Serial.printf("Temperature limit set to: %s C\n", temperatureLimitData);
+  String dataString(temperatureLimitData);
+  tempLimit = dataString.toFloat();                               //Convert string to float for use with comparison operator in checkIndoorClimate
+  Serial.println(tempLimit);
+}
+
+/**
+ * Function that is run when the ESP32 receives humidityLimit identifier on webSocket.
+ * Takes the incoming char array, converts it to float for use in checkIndoorClimate function.
+ * @param humidityLimitData The received message from the server containing humidLimit
+ * @param length The size of the received message
+ */
+void humidityLimit(const char * humidityLimitData, size_t length) {
+  Serial.printf("Relative humidity limit set to: %s %\n", humidityLimitData);
+  String dataString(humidityLimitData);
+  humidLimit = dataString.toFloat();
+}
+
+/**
+ * Function that is run when the ESP32 receives vocLimit identifier on webSocket.
+ * Takes the incoming char array, converts it to float for use in checkIndoorClimate function.
+ * @param vocLimitData The received message from the server containing VOCLimit
+ * @param length The size of the received message
+ */
+void vocLimit(const char * vocLimitData, size_t length) {
+  Serial.printf("VOC limit set to: %s ppm\n", vocLimitData);
+  String dataString(vocLimitData);
+  VOCLimit = dataString.toFloat();
+}
+
+/**
  * Function that checks sensor values every 10 seconds. If one or several of the readings are
  * exceeding their limits, the window should open in order to improve the indoor climate.
- * This function will only open the window of the manual override button on the webpage
- * is not triggered (windowOverride == 0).
- * @param autmationData The received message from the server containing the automationData
+ * This function will only open the window of the automation button on the webpage
+ * is pressed
+ * @param automationData The received message from the server containing the automationData
  * @param length The size of the received message
  */
 void checkIndoorClimate(const char * automationData, size_t length) {
@@ -60,9 +100,9 @@ void checkIndoorClimate(const char * automationData, size_t length) {
   float humidity = bme.humidity;
   float gas_res_kohm = bme.gas_resistance;
 
-  if(temperature > 24.0 || humidity >= 45.0 || gas_res_kohm <= 2.50) {                            
+  if(temperature > tempLimit || humidity >= humidLimit || gas_res_kohm <= VOCLimit) {                            
     servo.write(180);                                           //Some defined trigger levels for "bad indoor climate" and then the window should be opened 
-    nodeIO.LEDstate(HIGH);                                      //As long as the manual override (slider) on the webpage is not pressed, the window will open
+    nodeIO.LEDstate(HIGH);                                      //As long as the automation button on the webpage is pressed, the window will open
     Serial.println("Bad indoor climate. Window open.");         //automatically if the indoor climate is bad
   }
   else {
@@ -130,10 +170,13 @@ void setup() {
       delay(100);
     }
 
-    webSocket.on("clientConnected", event);                       //Declares all the different events the ESP32 should react to on the specified identifier
+    webSocket.on("clientConnected", serverMessage);               //Declares all the different events the ESP32 should react to on the specified identifier
     webSocket.on("windowStateChange", changeWindowState);         //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
     webSocket.on("checkIndoorClimate", checkIndoorClimate);
     webSocket.on("dataRequest", dataRequest);
+    webSocket.on("temperatureLimit", temperatureLimit);
+    webSocket.on("humidityLimit", humidityLimit);
+    webSocket.on("vocLimit", vocLimit);
 
     webSocket.begin(IP, PORT);                                    //Starts the connection to the server with the provided ip-address and port (unencrypted)
 
