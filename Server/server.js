@@ -31,8 +31,8 @@ io.on('connection', function(socket){                           //Everytime a us
     client.on('disconnect', function(){                         //Function that is called when the client is disconnected. The server can then do something even tough the client is disconnected
         console.log("User " + clientID + " disconnected, stopping timers if any");
 
-        for (var i = 0; i < dataTimers.length; i++) {               //Clear the timers if the client disconnects (this instance)
-            clearTimeout(dataTimers[i]);                            //clearTimeout is the same as stopping the timer, in this case we clear all possible timers previously set
+        for (var i = 0; i < dataTimers.length; i++) {           //Clear the timers if the client disconnects (this instance)
+            clearTimeout(dataTimers[i]);                        //clearTimeout is the same as stopping the timer, in this case we clear all possible timers previously set
         }
         for (var j = 0; j < automationTimers.length; j++) {
             clearTimeout(automationTimers[j]);
@@ -42,13 +42,6 @@ io.on('connection', function(socket){                           //Everytime a us
 
     //If a client calls one of the functions, use"io.emit" (to send to all clients) and not "client.emit" to only send to one client
 
-    socket.on('changeLEDState', function(state) {                 //Function that sends the LED state to the clients listening for the identifier
-
-        io.emit('LEDStateChange', state);                         //State can be a bool
-        console.log('User ' + clientID + ' changed the LED state to: ' + state);
-
-    });
-
     socket.on('changeWindowState', function(state) {            //Function that sends the window state to the clients listening for the identifier
 
         io.emit('windowStateChange', state);                    //State can be an int from 0-180
@@ -56,17 +49,9 @@ io.on('connection', function(socket){                           //Everytime a us
 
     });
 
-    socket.on('changeOverrideState', function(state) {          //Function that sends the override state to the clients listening for the identifier
-
-        io.emit('overrideState', state);                        //State can be a bool
-        console.log('User ' + clientID + ' changed the override state to: ' + state);
-
-    });
 
 
-    //Data from board
-
-    var dataTimers = [];                                            //Stores all our timers
+    var dataTimers = [];                                        //Stores all our timers
     var automationTimers = [];
 
     socket.on('requestDataFromBoard', function(interval) {      //Function that asks clients for data every time-interval
@@ -74,7 +59,7 @@ io.on('connection', function(socket){                           //Everytime a us
         console.log('User ' + clientID + ' requested data with interval (ms): ' + interval);
 
         if(interval > 99) {                                     //If the time-interval is not more than 100ms it does not allow it to start
-            dataTimers.push(                                        //If an actual argument is given (a time period) it starts the timer and periodically calls the function
+            dataTimers.push(                                    //If an actual argument is given (a time period) it starts the timer and periodically calls the function
                 setInterval(function(){
                     io.emit('dataRequest', 1);                  //Send "dataRequest" command/function to all clients
                 }, interval)
@@ -88,8 +73,8 @@ io.on('connection', function(socket){                           //Everytime a us
     socket.on('stopDataFromBoard', function() {                 //Function that stops all timers set by a client so that data will no longer be sent to the webpage
         console.log('User ' + clientID + ' cleared data request interval');
 
-        for (var i = 0; i < dataTimers.length; i++) {               //For loop to clear all set timers
-            clearTimeout(dataTimers[i]);                            //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
+        for (var i = 0; i < dataTimers.length; i++) {           //For loop to clear all set timers
+            clearTimeout(dataTimers[i]);                        //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
         }
 
     });
@@ -110,19 +95,33 @@ io.on('connection', function(socket){                           //Everytime a us
 
     });
 
-    socket.on('stopAutomation', function() {                 //Function that stops all timers set by a client so that data will no longer be sent to the webpage
+    socket.on('stopAutomation', function() {                    //Function that stops all timers set by a client so that data will no longer be sent to the webpage
         console.log('User ' + clientID + ' cleared automation interval');
 
-        for (var i = 0; i < automationTimers.length; i++) {               //For loop to clear all set timers
-            clearTimeout(automationTimers[i]);                            //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
+        for (var i = 0; i < automationTimers.length; i++) {     //For loop to clear all set timers
+            clearTimeout(automationTimers[i]);                  //clearTimeout is the same as stopping the timers, in this case we clear all timers previously set
         }
 
     });
 
-    socket.on('dataFromBoard', function(data) {                 //Function that receives sensor data
-                                                                //Everytime a "dataFromBoard" identifier (with data) is sent to the server, "data" tag with the actual data is sent to all clients
-        io.emit('data', data);                                  //This means the web browser will receive the data, and can then graph it
-        console.log('User ' + clientID + ' gained the data: ' + data);
+    socket.on('maxTemperature', function(data) {
+
+        io.emit('temperatureLimit', data);
+        console.log('Received the maximum temperature level: ' + data + ' C');
+
+    });
+
+    socket.on('maxHumidity', function(data) {
+
+        io.emit('humidityLimit', data);
+        console.log('Received the maximum humidity level: ' + data + ' %');
+
+    });
+
+    socket.on('maxVOC', function(data) {
+
+        io.emit('vocLimit', data);
+        console.log('Received the maximum VOC level: ' + data + ' ppm');
 
     });
 
