@@ -1,0 +1,2 @@
+climateNodeIO   KEYWORD1
+LEDstate    KEYWORD2

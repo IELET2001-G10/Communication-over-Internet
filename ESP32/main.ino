@@ -5,9 +5,11 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <SocketIoClient.h>
+#include "climateNodeIO.h"
 
 WiFiMulti WiFiMulti;                                              //Declare objects of the classes in the libraries that was included
 SocketIoClient webSocket;
+climateNodeIO nodeIO(18);
 Adafruit_BME680 bme;
 Servo servo;
 
@@ -26,20 +28,6 @@ const int PORT = 2520;
 */
 void event(const char * payload, size_t length) {                 //Default event, print the received data in serial monitor
   Serial.printf("Got message: %s from server\n", payload);
-}
-
-/**
- * Function that is run when the ESP32 receives LEDStateChange identifier on webSocket. 
- * Takes the incoming char array, formats it to string and prints to serial monitor.
- * Also converts the char array data to a string, converts it to an integer and
- * prints it in the serial monitor. Use the LEDStateData value to change LEDState.
- * @param LEDStateData The received message from the server containing the LEDState
- * @param length The size of the received message
- */
-void changeLEDState(const char * LEDStateData, size_t length) {
-  String dataString(LEDStateData);                                //Convertion of the const char array to a string
-  int LEDState = dataString.toInt();                              //Convertion of the string to an int
-  digitalWrite(18, LEDState);                                     //Use the LEDState variale to change the light (1 is on, 0 is off)
 }
 
 /**
@@ -74,12 +62,12 @@ void checkIndoorClimate(const char * automationData, size_t length) {
 
   if(temperature > 24.0 || humidity >= 45.0 || gas_res_kohm <= 2.50) {                            
     servo.write(180);                                           //Some defined trigger levels for "bad indoor climate" and then the window should be opened 
-    digitalWrite(18, 1);                                        //As long as the manual override (slider) on the webpage is not pressed, the window will open
+    nodeIO.LEDstate(HIGH);                                      //As long as the manual override (slider) on the webpage is not pressed, the window will open
     Serial.println("Bad indoor climate. Window open.");         //automatically if the indoor climate is bad
   }
   else {
     servo.write(0);                                             //If indoor climate is OK, the window is closed
-    digitalWrite(18, 0);
+    nodeIO.LEDstate(LOW);
     Serial.println("Indoor climate OK. Window closed.");
   }
 }
@@ -93,8 +81,6 @@ void checkIndoorClimate(const char * automationData, size_t length) {
  * @param length The size of the received message
  */
 void dataRequest(const char * dataRequestData, size_t length) {   //This is the function that is called everytime the server asks for data from the ESP32
-  Serial.printf("Datarequest: %s\n", dataRequestData);
-
   bme.performReading();
 
   char temperature[33];                                         //Declare char arrays for sensor data to send to server (needs to be char array to send to server)
@@ -145,8 +131,7 @@ void setup() {
     }
 
     webSocket.on("clientConnected", event);                       //Declares all the different events the ESP32 should react to on the specified identifier
-    webSocket.on("LEDStateChange", changeLEDState);               //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
-    webSocket.on("windowStateChange", changeWindowState);
+    webSocket.on("windowStateChange", changeWindowState);         //When one of the identifiers is sent from the server and received on the client, then the socket will call the associated function on the client (ESP32)
     webSocket.on("checkIndoorClimate", checkIndoorClimate);
     webSocket.on("dataRequest", dataRequest);
 
@@ -160,8 +145,6 @@ void setup() {
 
     servo.setPeriodHertz(50);                                     //Standard 50 Hz servo (like the SG90 or MG90S) that has a PWM period of 20 ms
     servo.attach(16, 500, 2500);                                  //Attaches the servo to GPIO16 with a duty cycle of 0.5-2.5 ms (0.5 ms = 0 deg and 2.5 ms = 180 deg)  NB! Check yours!
-
-    pinMode(18, OUTPUT);                                          //Declare the ESP32 board pin 18 as an output (to use as a warning light for bad indoor climate and the need to open a window)
 }
 
 /**
