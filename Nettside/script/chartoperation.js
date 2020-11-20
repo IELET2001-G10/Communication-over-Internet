@@ -6,7 +6,6 @@ var ctx = document.getElementById('myChart').getContext('2d'); //Defines the bas
 var myLineChart = new Chart(ctx, { //Defines the graph
     type: 'line', //Defines the type of graph
     data: { //Decides how the data (content of the graph will be)
-        labels: [time_now], //Labels define the values of the x-axis (and can be altered at a later point/live)
         datasets: [ //Datasets refers to the different graphs and the data they contain
             {
                 label: 'Temperatur', //Label of dataset/graph 1
