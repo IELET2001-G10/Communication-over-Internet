@@ -99,3 +99,18 @@ function sliderValue() { //Tells the server to stop all timers so that data is n
     socket.emit('changeWindowState', angle);
     console.log('Slider-value set to: ', angle);
 }
+
+function limtemp() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('maxTemperature', temp_lim);
+    console.log("maxTemperature: ", temp_lim);
+}
+
+function limhum() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('maxHumidity', hum_lim);
+    console.log("maxHumidity: ", hum_lim);
+}
+
+function limVOC() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
+    socket.emit('vocLimit', VOC_lim);
+    console.log("vocLimit: ", VOC_lim);
+}
