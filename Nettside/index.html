@@ -5,8 +5,8 @@
     <meta charset="UTF-8"> <!--Sets the encoding of the webpage-->
     <title>Datakommunikasjon-prosjekt</title> <!--Sets the title of the webpage-->
     <div class="header"> <!--Sets the title of the webpage-->
-        <h1>Kontroll- og overvåking av Inneklima</h1>
-        <k>Datakommunikasjons-prosjektet til gruppe 10</k>
+        <h1>Kontroll- og overvåking av Inneklima</h1><!--Sets the header title of the webpage-->
+        <n>Datakommunikasjons-prosjektet til gruppe 10</n><!--Sets the header subtitle of the webpage-->
     </div>
     <link rel="stylesheet" href="style.css"> <!--Imports the stylesheet of the webpage. It gives element style-->
     <script src="libraries/socket.io.js"></script><!--Load Socket.io library-->
@@ -14,8 +14,8 @@
     <script>
         var dataArr1 = [0]; /* The chart data for "Data 1", altering this array/list changes the graph data */
         var dataArr2 = [0]; /* The chart data for "Data 2", altering this array/list changes the graph data */
-        var dataArr3 = [0];
-        var dataArr4 = [0];
+        var dataArr3 = [0]; /* The chart data for "Data 3", altering this array/list changes the graph data */
+        var dataArr4 = [0]; /* The chart data for "Data 4", altering this array/list changes the graph data */
     </script>
 </head> <!-- the "/" indicates that the element is closed/stopped (you are done defining it)-->
 
@@ -30,19 +30,19 @@
                   to actually drag the object (the element you click on to begin dragging) you use the "dragBox" property here.
                   -->
                 <!-- Content of first box-->
-                <h2>Sanntidsverdier</h2>
-                <table width=80% height="80%"> <!--This defines the data table with width and height-->
+                <h2>Sanntidsverdier</h2> <!--This defines the title of the data table-->
+                <table width=80% height="80%"><!--This defines the data table with width and height-->
                     <tr>
-                        <th>Temperatur [ºC]</th>
-                        <th>Trykk [hPa]</th>
-                        <th>Fuktighet [%]</th>
-                        <th>Luftkvalitet</th>
+                        <th>Temperatur [ºC]</th><!--This defines the data tables first row (the titles)-->
+                        <th>Trykk [hPa]</th><!--This defines the data tables first row (the titles)-->
+                        <th>Fuktighet [%]</th><!--This defines the data tables first row (the titles)-->
+                        <th>Luftkvalitet</th><!--This defines the data tables first row (the titles)-->
                     </tr>
                     <tr>
-                        <td id="temp">Ingen data</td>
-                        <td id="pressure">Ingen data</td>
-                        <td id="hum">Ingen data</td>
-                        <td id="voc">Ingen data</td>
+                        <td id="temp">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
+                        <td id="pressure">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
+                        <td id="hum">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
+                        <td id="voc">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
                     </tr>
                 </table>
             </div>
@@ -67,10 +67,65 @@
             </div>
         </div>
 
-        <div class="control-module" id="control-module-3"> <!--This defines the third box with the graph in it (lower left)-->
+        <div class="control-module" id="control-module-3"> <!--This defines the third box with the limit values-->
             <!-- Content of third box-->
-            <div class="chart-container dragElement dragBox"> <!--Define the chart container element (box where the chart is placed)-->
-                <canvas id="myChart" width="400" height="400"></canvas> <!--The actual chart element. Notice, this uses an id so copying it wont give you more charts. Something else has to be done-->
+            <div class="btn-container dragElement">
+                <div class="btn-title-con dragBox">
+                    <h2 class="btn-title">INSTILLING AV GRENSER</h2> c
+                </div>
+                <div class="btn-box2">
+                    <es>Still inn grense for temperatur:</es><!--This prints the text above the first slider-->
+                    <k>Verdi: <span id="demo1"></span>°C</k><!--This prints the value of the first slider-->
+                    <div class="slidecontainer1">
+                        <input type="range" min="15" max="30" value="20" step="0.5" class="slider1" id="myRange1"><!--This is the slider code with it's properties-->
+                    </div>
+                    <!--This script gets the slidervalue and sends data to the server-->
+                    <script>
+                        var slider1 = document.getElementById("myRange1");
+                        var output1 = document.getElementById("demo1");
+                        output1.innerHTML = slider1.value;
+
+                        slider1.oninput = function() {
+                            output1.innerHTML = this.value;
+                            temp_lim = slider1.value;
+                            limtemp()
+                        }
+                    </script>
+                    <es>Still inn grense for fuktighet:</es><!--This prints the text above the second slider-->
+                    <k>Verdi: <span id="demo2"></span>%</k><!--This prints the value of the second slider-->
+                    <div class="slidecontainer1">
+                        <input type="range" min="0" max="50" value="20" class="slider2" id="myRange2"> <!--This is the slider code with it's properties-->
+                    </div>
+                    <!--This script gets the slidervalue and sends data to the server-->
+                    <script>
+                        var slider2 = document.getElementById("myRange2");
+                        var output2 = document.getElementById("demo2");
+                        output2.innerHTML = slider2.value;
+
+                        slider2.oninput = function() {
+                            output2.innerHTML = this.value;
+                            hum_lim = slider2.value;
+                            limhum()
+                        }
+                    </script>
+                    <es>Still inn grense for VOC:</es><!--This prints the text above the third slider-->
+                    <k>Verdi: <span id="demo3"></span></k><!--This prints the value of the third slider-->
+                    <div class="slidecontainer1">
+                        <input type="range" min="0" max="100" value="10" class="slider3" id="myRange3"><!--This is the slider code with it's properties-->
+                    </div>
+                    <!--This script gets the slidervalue and sends data to the server-->
+                    <script>
+                        var slider3 = document.getElementById("myRange3");
+                        var output3 = document.getElementById("demo3");
+                        output3.innerHTML = slider3.value;
+
+                        slider3.oninput = function() {
+                            output3.innerHTML = this.value;
+                            VOC_lim = slider3.value;
+                            limVOC()
+                        }
+                    </script>
+                </div>
             </div>
         </div>
 
@@ -81,11 +136,12 @@
                     <h2 class="btn-title">INSTILLING AV SERVO VINKEL</h2> <!--Title in the title-box-->
                 </div>
                 <div class="btn-box1"> <!--Button container (left side of the container (split in middle) with a white background)-->
-                    <es>Still inn antall grader på servoen &rarr; &nbsp;</es>
+                    <es>Still inn antall grader på servoen &rarr; &nbsp;</es><!--This prints the text and arrow before the slider-->
                     <div class="slidecontainer">
-                        <input type="range" min="0" max="180" value="0" class="slider" id="myRange">
-                        <p>Value: <span id="demo"></span>°</p>
+                        <input type="range" min="0" max="180" value="0" class="slider" id="myRange"><!--This is the slider code with it's properties-->
+                        <p>Value: <span id="demo"></span>°</p><!--This prints the value of the slider-->
                     </div>
+                    <!--This script gets the slidervalue and sends data to the server-->
                     <script>
                         var slider = document.getElementById("myRange");
                         var output = document.getElementById("demo");
@@ -98,9 +154,9 @@
                         }
                     </script>
                 </div>
-                <es>Huk av knapp for automatisk styring &rarr; &nbsp;</es>
+                <es>Huk av knapp for automatisk styring &rarr; &nbsp;</es><!--This prints the text and arrow before the checkbox-->
                 <label class="switch">
-                    <input type="checkbox" id="myCheck" onclick="check()">
+                    <input type="checkbox" id="myCheck" onclick="check()"><!--This is the checkbox code with the a script that makes the slider "invisible" when checkbox is checked-->
                 </label>
                 <script>
                     function check() {
@@ -120,7 +176,7 @@
 </div>
 
 <div class="footer">
-    <n>Gruppens medlemmer: Martin K. Gløsmyr, Håvard O. Kopperstad, Julius Haug, Mads Røvik og Youssef Aldabak</n>
+    <n>Gruppens medlemmer: Martin K. Gløsmyr, Håvard O. Kopperstad, Julius Haug, Mads Røvik og Youssef Aldabak</n><!--Sets the footer title of the webpage-->
 </div>
 </div>
 
