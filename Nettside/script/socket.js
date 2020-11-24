@@ -111,6 +111,6 @@ function limhum() { //Tells the server to stop all timers so that data is no lon
 }
 
 function limVOC() { //Tells the server to stop all timers so that data is no longer sent from the ESP32 to the webpage
-    socket.emit('vocLimit', VOC_lim);
-    console.log("vocLimit: ", VOC_lim);
+    socket.emit('maxVOC', VOC_lim);
+    console.log("maxVOC: ", VOC_lim);
 }
