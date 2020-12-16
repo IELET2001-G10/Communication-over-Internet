@@ -14,46 +14,26 @@ socket.on('clientConnected',function(id, ip) { //This is our self-made functions
 });
 
 socket.on('temperatureData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
-    var now = new Date();
-    var time_now = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
     document.getElementById('temp').innerHTML = data;
     console.log('Received temperature: ' + data + ' ℃');
-    dataArr1.push(data); //This pushes data to the array that stores all the chart data
-    myLineChart.data.labels.push(time_now)
-    myLineChart.update(); //This updates the chart
 
 });
 
 socket.on('pressureData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
-    var now = new Date();
-    var time_now = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
     document.getElementById('pressure').innerHTML = data;
     console.log('Received pressure: ' + data + ' hPa');
-    dataArr2.push(data); //This pushes data to the array that stores all the chart data
-    myLineChart.data.labels.push(time_now)
-    myLineChart.update(); //This updates the chart
 
 });
 
 socket.on('humidityData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
-    var now = new Date();
-    var time_now = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
     document.getElementById('hum').innerHTML = data;
     console.log('Received relative humidity: ' + data + ' %');
-    dataArr3.push(data); //This pushes data to the array that stores all the chart data
-    myLineChart.data.labels.push(time_now)
-    myLineChart.update(); //This updates the chart
 
 });
 
 socket.on('vocData', function(data) { //Received data from the server who is forwarding it to us from the ESP32
-    var now = new Date();
-    var time_now = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
     document.getElementById('voc').innerHTML = data;
     console.log('Received VOC level: ' + data + ' ppm');
-    dataArr4.push(data); //This pushes data to the array that stores all the chart data
-    myLineChart.data.labels.push(time_now)
-    myLineChart.update(); //This updates the chart
 
 });
 
