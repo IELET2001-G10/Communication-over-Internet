@@ -21,7 +21,7 @@ WIFI CREDENTIALS:
   1. Be sure to provide your WiFi-credentials in line 16 and 17 i main.ino!
 
 
-3RD PARTY LIBRARIES:
+CREDITS:
   The libraries we have used can be found here:
     - https://github.com/adafruit/Adafruit_BME680
     - https://github.com/adafruit/Adafruit_Sensor
