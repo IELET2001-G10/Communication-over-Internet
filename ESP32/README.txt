@@ -16,12 +16,14 @@ PIN-CONNECTION GUIDE:
       ii.  Connect red wire to 5V on ESP32 DevKit-C
       iii. Connect orange wire to pin number 16 on ESP32 DevKit-C
       
- WIFI CREDENTIALS:
- 1. Be sure to provide your WiFi-credentials in line 16 and 17 i main.ino!
+      
+WIFI CREDENTIALS:
+  1. Be sure to provide your WiFi-credentials in line 16 and 17 i main.ino!
+
 
 3RD PARTY LIBRARIES:
-The libraries we have used can be found here:
-  - https://github.com/adafruit/Adafruit_BME680
-  - https://github.com/adafruit/Adafruit_Sensor
-  - https://madhephaestus.github.io/ESP32Servo/files.html
-  - https://github.com/timum-viw/socket.io-client
+  The libraries we have used can be found here:
+    - https://github.com/adafruit/Adafruit_BME680
+    - https://github.com/adafruit/Adafruit_Sensor
+    - https://madhephaestus.github.io/ESP32Servo/files.html
+    - https://github.com/timum-viw/socket.io-client
