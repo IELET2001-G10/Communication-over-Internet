@@ -1,4 +1,3 @@
-/*This entire file will not be commented. If you want to learn the different style properties check out W3Schools (google it)*/
 * { /*This symbol applies to all elements on the page */
     margin: 0;
     padding: 0;
@@ -70,7 +69,6 @@ html,body { /*Here two elements are defined at the same time, that is possible. 
 }
 
 /* Controlmodules */
-/* Keyboard */
 .data-container {
     width: 30%; /*50% of the width of the screen*/
     height: 30%; /*and 50% of the height of the screen = 1/4 of the screen*/
@@ -142,6 +140,22 @@ html,body { /*Here two elements are defined at the same time, that is possible. 
     justify-content: center;
 }
 
+.btn-box2 {
+    width: 100%;
+}
+
+.slider1 {
+    width: 100%;
+}
+
+.slider2 {
+    width: 100%;
+}
+
+.slider3 {
+    width: 100%;
+}
+
 .btn {
     width: 75%;
     height: 50%;
@@ -206,5 +220,5 @@ n {
 }
 
 k {
-    font-size: 20px;
+    font-size: 15px;
 }
