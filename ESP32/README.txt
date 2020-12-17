@@ -19,6 +19,9 @@ PIN-CONNECTION GUIDE:
       
 WIFI CREDENTIALS:
   1. Be sure to provide your WiFi-credentials in line 16 and 17 i main.ino!
+  
+
+Upload the code from Arduino IDE to your ESP32 DevKit-C board, and follow the two other README.txt in the "Nettside" and "Server" folders.
 
 
 CREDITS:
