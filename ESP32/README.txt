@@ -10,3 +10,4 @@ The libraries we have used can be found here:
   - https://github.com/adafruit/Adafruit_BME680
   - https://github.com/adafruit/Adafruit_Sensor
   - https://madhephaestus.github.io/ESP32Servo/files.html
+  - https://github.com/timum-viw/socket.io-client
