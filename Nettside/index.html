@@ -1,21 +1,23 @@
+<!-- THIS HTML-CODE IS BASED ON THE EXAMPLE CODE GIVEN FROM THE TEACHERS. YOU WILL THEREFORE FIND SEVERAL SIMILARITIES -->
+
 <!DOCTYPE html> <!--Defines the HTML document-->
 <html lang="no"> <!--Sets the language for the webpage-->
 
 <head> <!--Defined the head element, which is to say the top of the webpage. Sometimes menus are placed here-->
     <meta charset="UTF-8"> <!--Sets the encoding of the webpage-->
-    <title>Datakommunikasjon-prosjekt</title> <!--Sets the title of the webpage-->
+    <title>Datakommunikasjonsprosjekt</title> <!--Sets the title of the webpage-->
     <div class="header"> <!--Sets the title of the webpage-->
-        <h1>Kontroll- og overvåking av Inneklima</h1><!--Sets the header title of the webpage-->
-        <n>Datakommunikasjons-prosjektet til gruppe 10</n><!--Sets the header subtitle of the webpage-->
+        <h1>Kontroll- og overvåking av inneklima</h1><!--Sets the header title of the webpage-->
+        <n>Datakommunikasjonsprosjektet til gruppe 10</n><!--Sets the header subtitle of the webpage-->
     </div>
     <link rel="stylesheet" href="style.css"> <!--Imports the stylesheet of the webpage. It gives element style-->
     <script src="libraries/socket.io.js"></script><!--Load Socket.io library-->
     <script src="libraries/Chart.min.js"></script> <!--Load Chart.js library-->
     <script>
-        var dataArr1 = [0]; /* The chart data for "Data 1", altering this array/list changes the graph data */
-        var dataArr2 = [0]; /* The chart data for "Data 2", altering this array/list changes the graph data */
-        var dataArr3 = [0]; /* The chart data for "Data 3", altering this array/list changes the graph data */
-        var dataArr4 = [0]; /* The chart data for "Data 4", altering this array/list changes the graph data */
+        var dataArr1 = [0]; <!-- These are the arrays that is the project's "database" -->
+        var dataArr2 = [0]; <!-- One array will store sensor readings for one of the four sensor values -->
+        var dataArr3 = [0];
+        var dataArr4 = [0];
     </script>
 </head> <!-- the "/" indicates that the element is closed/stopped (you are done defining it)-->
 
@@ -26,23 +28,23 @@
 
         <div class="control-module" id="control-module-1"> <!--This defines the first box (upper left)-->
             <div class="data-container dragElement dragBox"> <!--The "dragElement" and "dragBox" makes the element "dragable"
-                  To define the element that can be draged you use the "dragElement" property here, to define what element that can be used
+                  To define the element that can be dragged you use the "dragElement" property here, to define what element that can be used
                   to actually drag the object (the element you click on to begin dragging) you use the "dragBox" property here.
                   -->
                 <!-- Content of first box-->
                 <h2>Sanntidsverdier</h2> <!--This defines the title of the data table-->
                 <table width=80% height="80%"><!--This defines the data table with width and height-->
                     <tr>
-                        <th>Temperatur [ºC]</th><!--This defines the data tables first row (the titles)-->
-                        <th>Trykk [hPa]</th><!--This defines the data tables first row (the titles)-->
-                        <th>Fuktighet [%]</th><!--This defines the data tables first row (the titles)-->
-                        <th>Luftkvalitet</th><!--This defines the data tables first row (the titles)-->
+                        <th>Temperatur [ºC]</th><!--These four titles defines the data table's first row-->
+                        <th>Trykk [hPa]</th>
+                        <th>Fuktighet [%]</th>
+                        <th>Luftkvalitet</th>
                     </tr>
                     <tr>
                         <td id="temp">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
-                        <td id="pressure">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
-                        <td id="hum">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
-                        <td id="voc">Ingen data</td><!--This defines the data tables second row, and prints the data in the cell-->
+                        <td id="pressure">Ingen data</td>
+                        <td id="hum">Ingen data</td>
+                        <td id="voc">Ingen data</td>
                     </tr>
                 </table>
             </div>
