@@ -6,3 +6,7 @@ It is recommended that you read the README.txt in this order:
   1. README.txt in "ESP32"-folder
   2. README.txt in "Server"-folder
   3. README.txt in "Nettside"-folder
+
+
+The whole repository for the project can be found at:
+https://github.com/IELET2001-G10/Communication-over-Internet
